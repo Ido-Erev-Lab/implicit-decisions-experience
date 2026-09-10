@@ -1,0 +1,20 @@
+{{ block title }}
+    Round {{ player.round_number }} results
+{{ endblock }}
+
+{{ block content }}
+
+<table class="table">
+    <tr><td>Correct characters</td><td>{{ player.correct }}</td></tr>
+    <tr><td>Mistakes</td><td>{{ player.mistakes }}</td></tr>
+    <tr><td>Points this round</td><td>{{ player.round_score }}</td></tr>
+    <tr><td><strong>Total so far</strong></td><td><strong>{{ total_score }}</strong></td></tr>
+</table>
+
+{{ if is_last_round }}
+    <p>That was the last round. Thanks for playing!</p>
+{{ endif }}
+
+{{ next_button }}
+
+{{ endblock }}

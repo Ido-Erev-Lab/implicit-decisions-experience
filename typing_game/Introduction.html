@@ -1,0 +1,87 @@
+{% block title %}
+Demographic Information
+{% endblock %}
+
+
+{% block content %}
+<style>
+    /*NOTE: this is not optimizied for small screens*/
+    html,
+    body {
+        margin: 0;
+        padding: 0.0rem;
+        width: 100%;
+        min-height: 100vh;
+        overflow: visible;
+        background: #f9f9f9;
+    }
+
+    .full-screen-container {
+        background: #f9f9f9;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 2 rem;
+        font-size: 1.3rem
+    }
+
+    .card.card-intro {
+    border: none;
+    border-radius: none;
+    background: none; /* Remove background and borders */
+    max-width: 800px;
+    padding: 2 rem; 
+    box-sizing: border-box;
+  }
+
+   p {
+    margin: 0.3em ;   /* Was 0.6em previously */
+  }
+
+  .btn-primary {
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+    font-weight: 700;
+    font-size: 1 em;   /* Slightly smaller than 0.95em */
+    padding: 6px 14px;  /* Reduced padding */
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-primary:hover,
+  .btn-primary:focus,
+  .btn-primary:active {
+    background-color: #243645;
+    border-color: #243645;
+  }
+
+  .do-not-show {
+    display: none;
+}
+
+</style>
+
+<div class = "full-screen-container">
+    <div class ="card card-intro">
+        <p>Thank you for participating in our research. Your contribution is invaluable to us.</p>
+        <p>You will receive a participation fee of <strong> ${{participation_fee}}</strong>. </p>
+
+        <u>Demographics</u>
+        <p>Please provide the following information:</p>
+        {% formfield player.gender label="Gender:" %}
+        {% formfield player.age label="Age:" %}
+        {% formfield player.prolific_id label="Prolific ID:" %}
+      
+         <br>
+         <br>
+          <u>Consent</u>
+        <p>
+          By pressing <strong>“I agree”</strong> you indicate your consent to participate in this study.
+        </p>
+        <button class="otree-btn-next btn btn-primary">I agree</button>
+    </div>
+</div>
+{% endblock %}
+
+

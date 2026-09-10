@@ -1,0 +1,16 @@
+{{ block content }}
+<div style="height:80vh; display:flex; align-items:center; justify-content:center;">
+    <h1>Press the space bar to begin</h1>
+</div>
+{{ endblock }}
+
+{{ block scripts }}
+<script>
+document.addEventListener('keydown', function (e) {
+    if (e.code === 'Space') {
+        e.preventDefault();
+        document.getElementById('form').submit();
+    }
+});
+</script>
+{{ endblock }}

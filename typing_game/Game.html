@@ -1,0 +1,49 @@
+{{ block content }}
+<div style="text-align:center;">
+    <div id = "target-string" style="font-size:3em; letter-spacing:10px;">{{ player.target_string }}</div>
+
+        <input type="text" id="typed-input" name="typed_string" autocomplete="off"
+               style="font-size:2em; text-align:center; margin-top:20px;">
+        <input type="hidden" name="keystroke_time" id="keystroke-time-input">
+</div>
+{{ endblock }}
+
+{{ block scripts }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('typed-input');
+    var targetElement = document.getElementById('target-string');
+    var startTime = null;
+    var times = [];
+    var targetLength = {{ player.string_length }};
+    var timeLimit = {{ C.TIME_LIMIT }};
+    var typeTimeLimit = {{ C.TYPE_TIME_LIMIT }};
+
+    input.focus();
+
+    setTimeout(function () {
+        if (targetElement) {
+            targetElement.style.visibility = 'hidden';
+        }
+    }, timeLimit);
+
+    var autoSubmitTimer = setTimeout(function () {
+        document.getElementById('keystroke-time-input').value = JSON.stringify(times);
+        document.getElementById('form').submit();
+    }, typeTimeLimit);
+
+    input.addEventListener('input', function () {
+        var now = performance.now();
+        if (startTime === null) {
+            startTime = now;
+        }
+        times.push(Math.round(now - startTime));
+
+        if (input.value.length >= targetLength) {
+            document.getElementById('keystroke-time-input').value = JSON.stringify(times);
+            document.getElementById('form').submit();
+        }
+    });
+});
+</script>
+{{ endblock }}

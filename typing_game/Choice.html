@@ -1,0 +1,18 @@
+{{ block content }}
+<div style="text-align:center; margin-top:60px;">
+    <h3 class = "mb-5">Please choose whether you want to play this round. <br> <br> If you opt out you will get 0 points.</h3>
+    
+    <input type="hidden" name="choice" id="choice-input" value="">
+    <button type="button" class="btn btn-primary btn-lg" style="margin-right: 15px;" onclick="chooseAndSubmit('play')">Play</button>
+    <button type="button" class="btn btn-primary btn-lg" onclick="chooseAndSubmit('safe')">Opt out</button>
+
+</div>
+
+<script>
+function chooseAndSubmit(value) {
+    var input = document.getElementById('choice-input');
+    input.value = value;
+    input.form.submit();
+}
+</script>
+{{ endblock }}
