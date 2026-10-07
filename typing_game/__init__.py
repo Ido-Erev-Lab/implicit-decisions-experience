@@ -11,8 +11,8 @@ typing game setup: random string of 1 and 0 for a few seconds, type the string i
 class C(BaseConstants):
     NAME_IN_URL = 'typing_game'
     PLAYERS_PER_GROUP = None
-    MAIN = 5 # number of rounds for the main game for creating subsession function
-    ASSESSMENT = 5 # number of rounds for each assessment block 
+    MAIN = 2 # number of rounds for the main game for creating subsession function
+    ASSESSMENT = 2 # number of rounds for each assessment block 
     ASSESSMENT_BLOCKS = 4 # number of assessment blocks
 
     NUM_ROUNDS = MAIN + (ASSESSMENT * ASSESSMENT_BLOCKS)
@@ -37,7 +37,7 @@ class Group(BaseGroup):
 class Player(BasePlayer):
     #choice = models.StringField(choices = ['play', 'safe'], blank=True)
     string_length = models.IntegerField() 
-    phase = models.StringField() #assessment and main
+
     target_string = models.StringField()
     typed_string = models.StringField(blank=True)
     correct = models.IntegerField(initial=0)
@@ -46,7 +46,11 @@ class Player(BasePlayer):
     keystroke_time = models.LongStringField(blank=True)
     round_keystroke_time = models.IntegerField(initial=0) #in ms
     total_keystroke_time = models.IntegerField(initial=0)
-    
+
+    #phases
+    phase = models.StringField() #assessment and main
+    assessment_block = models.IntegerField(blank=True) #1-4, for assessment phase only
+
     #demographics 
     age = models.IntegerField(blank=True, min=18, max=100)
     gender = models.StringField(choices=['Male', 'Female', 'Other'])
@@ -64,7 +68,7 @@ def creating_session(subsession: Subsession):
             #build assessment sequences
             sequence = []
             for length in block_lengths:
-                sequence.extend([length] * 5)  # 5 rounds of each length
+                sequence.extend([length] * C.ASSESSMENT)  # rounds of each length
 
             p.participant.vars['assessment_lengths'] = sequence
 
@@ -72,12 +76,15 @@ def creating_session(subsession: Subsession):
         if subsession.round_number <= C.MAIN:
             p.string_length = 10
             p.phase = 'main'
+            p.assessment_block = None
         #assign assessment phase 
         else:
-            assessment_index = subsession.round_number - C.ASSESSMENT - 1 #maps rounds to indices 0 - 20
+            assessment_index = subsession.round_number - C.MAIN - 1 #maps rounds to indices 0 - 20
             #######remember that you have cluged these indices 
             p.string_length = p.participant.vars['assessment_lengths'][assessment_index]
             p.phase = 'assessment'
+            
+            p.assessment_block = (assessment_index // C.ASSESSMENT) + 1  # 1-4
         #generate target string
         p.target_string = ''.join(
                 random.choice('10') for _ in range(p.string_length)
@@ -90,15 +97,13 @@ def calculate_score(player: Player):
 
     correct = 0
     mistakes = 0
-
-    for i in range(max(len(target), len(typed))):
-        target_ch = target[i] if i < len(target) else None
-        typed_ch = typed[i] if i < len(typed) else None
-
+#zip compares characters up to the length that was typed
+    for target_ch, typed_ch in zip(target, typed):
         if typed_ch == target_ch:
             correct += 1
         else:
             mistakes += 1
+
     points = correct * C.CORRECT + mistakes * C.MISTAKE
     if mistakes >= C.MISTAKE_THRESHOLD:
         points += C.THRESHOLD_PENALTY
@@ -161,7 +166,6 @@ class Choice(Page):
 class Ready(Page):
     pass
     
-    
 class Game(Page):
     form_model = 'player'
     form_fields = ['typed_string', 'keystroke_time']
@@ -169,6 +173,29 @@ class Game(Page):
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
         calculate_score(player)
+
+class Assessment(Page):
+    @staticmethod
+    def is_displayed(player: Player):
+        # Displays on round 6, 11, 16, 21 (the start of each assessment block)
+        return (
+            player.phase == 'assessment'
+            and (player.round_number - C.MAIN-1) % C.ASSESSMENT == 0
+        )
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {
+            'string_length': player.string_length,  # 5, 7, 9, or 11
+            'rounds_in_block': C.ASSESSMENT,
+            'time_limit': C.TIME_LIMIT // 1000,
+            'type_time_limit': C.TYPE_TIME_LIMIT // 1000,
+            'correct_points': C.CORRECT,
+            'mistake_points': C.MISTAKE,
+            'mistake_threshold': C.MISTAKE_THRESHOLD,
+            'threshold_penalty': C.THRESHOLD_PENALTY,
+            'num_rounds': C.NUM_ROUNDS
+        }
 
 class Results(Page):
     @staticmethod
@@ -179,4 +206,4 @@ class Results(Page):
            'is_last_round': player.round_number == C.NUM_ROUNDS
         }
 
-page_sequence = [Instructions, Ready, Game, Results]
+page_sequence = [Instructions, Assessment, Ready, Game, Results]
