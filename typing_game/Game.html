@@ -16,16 +16,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var startTime = null;
     var times = [];
     var targetLength = {{ player.string_length }};
-    var timeLimit = {{ C.TIME_LIMIT }};
     var typeTimeLimit = {{ C.TYPE_TIME_LIMIT }};
 
     input.focus();
 
-    setTimeout(function () {
-        if (targetElement) {
-            targetElement.style.visibility = 'hidden';
-        }
-    }, timeLimit);
+    //setTimeout(function () {
+    //    if (targetElement) {
+    //        targetElement.style.visibility = 'hidden';
+    //    }
+    //}, timeLimit);
 
     var autoSubmitTimer = setTimeout(function () {
         document.getElementById('keystroke-time-input').value = JSON.stringify(times);

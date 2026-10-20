@@ -16,8 +16,8 @@ class C(BaseConstants):
     ASSESSMENT_BLOCKS = 4 # number of assessment blocks
 
     NUM_ROUNDS = MAIN + (ASSESSMENT * ASSESSMENT_BLOCKS)
-    TIME_LIMIT = 1000  # in milliseconds
-    TYPE_TIME_LIMIT = 3000  # in milliseconds
+    #TIME_LIMIT = 1000  # currently unused, limits time that sequence is on screen 
+    TYPE_TIME_LIMIT = 2000  # in milliseconds
     CORRECT = 1
     MISTAKE = -1
     MISTAKE_THRESHOLD = 4
@@ -56,6 +56,9 @@ class Player(BasePlayer):
     gender = models.StringField(choices=['Male', 'Female', 'Other'])
     prolific_id = models.StringField(blank=True)
 
+    #pay
+    probability_bonus = models.FloatField(initial=0.0)
+    received_bonus = models.BooleanField(initial=False)
 
 def creating_session(subsession: Subsession):
     for p in subsession.get_players():
@@ -148,7 +151,6 @@ class Instructions(Page):
     def vars_for_template(player):
         return {
             'num_rounds': C.NUM_ROUNDS,
-            'time_limit': C.TIME_LIMIT // 1000,  # convert to seconds
             'type_time_limit': C.TYPE_TIME_LIMIT // 1000,  # convert to seconds
             'string_length': player.string_length,
             'correct_points': C.CORRECT,
@@ -188,7 +190,6 @@ class Assessment(Page):
         return {
             'string_length': player.string_length,  # 5, 7, 9, or 11
             'rounds_in_block': C.ASSESSMENT,
-            'time_limit': C.TIME_LIMIT // 1000,
             'type_time_limit': C.TYPE_TIME_LIMIT // 1000,
             'correct_points': C.CORRECT,
             'mistake_points': C.MISTAKE,
@@ -201,9 +202,22 @@ class Results(Page):
     @staticmethod
     def vars_for_template(player: Player):
         total_score = sum(p.round_score for p in player.in_all_rounds())
+        #pay
+        total_payoff = 0
+        player.probability_bonus = random.randrange(0, 200)
+        #for last round only - caclualte whether or not they get the bonus
+        is_last_round = player.round_number == C.NUM_ROUNDS
+        if is_last_round:
+            if player.probability_bonus < total_score:
+                player.received_bonus = True
+                total_payoff = C.BONUS + C.PARTICIPATION_FEE
+            else:
+                player.received_bonus = False
+                total_payoff = C.PARTICIPATION_FEE
         return {
            'total_score': total_score,
-           'is_last_round': player.round_number == C.NUM_ROUNDS
+           'is_last_round': is_last_round,
+           'payoff': total_payoff,
         }
 
 page_sequence = [Instructions, Assessment, Ready, Game, Results]

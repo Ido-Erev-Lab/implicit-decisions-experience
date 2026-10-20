@@ -12,7 +12,17 @@
 </table>
 
 {{ if is_last_round }}
-    <p>That was the last round. Thanks for playing!</p>
+    <br>
+    <h3>That was the last round. Thanks for playing!</h3>
+    <p>
+        Your total score was {{ total_score }} points.
+        {% if player.received_bonus %}
+            You earned the bonus of ${{ C.BONUS }}! Your total payoff is ${{ payoff }}.
+        {% else %}
+            Your total payoff is ${{ payoff }}.
+        {% endif %}
+    </p>
+    
 {{ endif }}
 
 {{ next_button }}
