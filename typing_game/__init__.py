@@ -19,9 +19,9 @@ class C(BaseConstants):
     #TIME_LIMIT = 1000  # currently unused, limits time that sequence is on screen 
     TYPE_TIME_LIMIT = 2000  # in milliseconds
     CORRECT = 1
-    MISTAKE = -1
-    MISTAKE_THRESHOLD = 4
-    THRESHOLD_PENALTY = -20
+    MISTAKE = 0
+    MISTAKE_PROBABILITY = 0.05 #5% chance of losing points
+    MISTAKE_PENALTY = -20
 
     
 #participation fee
@@ -101,15 +101,19 @@ def calculate_score(player: Player):
     correct = 0
     mistakes = 0
 #zip compares characters up to the length that was typed
+#note: mistakes are incorrect characters, not missing characters. 
     for target_ch, typed_ch in zip(target, typed):
         if typed_ch == target_ch:
             correct += 1
         else:
             mistakes += 1
 
+    #base +1 for correct, 0 for incorrect unless triggered
     points = correct * C.CORRECT + mistakes * C.MISTAKE
-    if mistakes >= C.MISTAKE_THRESHOLD:
-        points += C.THRESHOLD_PENALTY
+    penalty = sum(
+        1 for _ in range(mistakes) if random.random() < C.MISTAKE_PROBABILITY
+    )
+    points += penalty * C.MISTAKE_PENALTY
 
     player.correct = correct
     player.mistakes = mistakes
@@ -155,8 +159,9 @@ class Instructions(Page):
             'string_length': player.string_length,
             'correct_points': C.CORRECT,
             'mistake_points': C.MISTAKE,
-            'mistake_threshold': C.MISTAKE_THRESHOLD,
-            'threshold_penalty': C.THRESHOLD_PENALTY,
+            'mistake_probability': int(C.MISTAKE_PROBABILITY * 100),
+            'nothing_probability': int((1 - C.MISTAKE_PROBABILITY) * 100),
+            'mistake_penalty': C.MISTAKE_PENALTY,
             'participation_fee': C.PARTICIPATION_FEE,
             'bonus': C.BONUS
         }
@@ -193,8 +198,9 @@ class Assessment(Page):
             'type_time_limit': C.TYPE_TIME_LIMIT // 1000,
             'correct_points': C.CORRECT,
             'mistake_points': C.MISTAKE,
-            'mistake_threshold': C.MISTAKE_THRESHOLD,
-            'threshold_penalty': C.THRESHOLD_PENALTY,
+            'mistake_probability': int(C.MISTAKE_PROBABILITY * 100),
+            'nothing_probability': int((1 - C.MISTAKE_PROBABILITY) * 100),
+            'mistake_penalty': C.MISTAKE_PENALTY,
             'num_rounds': C.NUM_ROUNDS
         }
 
