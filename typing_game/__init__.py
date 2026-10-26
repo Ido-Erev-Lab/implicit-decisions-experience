@@ -20,8 +20,6 @@ class C(BaseConstants):
     TYPE_TIME_LIMIT = 2000  # in milliseconds
     CORRECT = 1
     MISTAKE = -1
-    MISTAKE_THRESHOLD = 4
-    THRESHOLD_PENALTY = -20
 
     
 #participation fee
@@ -108,8 +106,6 @@ def calculate_score(player: Player):
             mistakes += 1
 
     points = correct * C.CORRECT + mistakes * C.MISTAKE
-    if mistakes >= C.MISTAKE_THRESHOLD:
-        points += C.THRESHOLD_PENALTY
 
     player.correct = correct
     player.mistakes = mistakes
@@ -155,8 +151,6 @@ class Instructions(Page):
             'string_length': player.string_length,
             'correct_points': C.CORRECT,
             'mistake_points': C.MISTAKE,
-            'mistake_threshold': C.MISTAKE_THRESHOLD,
-            'threshold_penalty': C.THRESHOLD_PENALTY,
             'participation_fee': C.PARTICIPATION_FEE,
             'bonus': C.BONUS
         }
@@ -193,8 +187,6 @@ class Assessment(Page):
             'type_time_limit': C.TYPE_TIME_LIMIT // 1000,
             'correct_points': C.CORRECT,
             'mistake_points': C.MISTAKE,
-            'mistake_threshold': C.MISTAKE_THRESHOLD,
-            'threshold_penalty': C.THRESHOLD_PENALTY,
             'num_rounds': C.NUM_ROUNDS
         }
 
